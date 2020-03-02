@@ -9,7 +9,7 @@ response = {
     'statusCode': 404,
     'body': ''
 }
-expected_keys = ["sell", "date", "until", "buy", "from"]
+expected_keys = {"sell", "date", "until", "buy", "from"}
 
 
 def convert_to_epoch(date: str) -> str:
@@ -26,7 +26,7 @@ def lambda_handler(event, context):
     if(data := event.get('body')):
 
         data = json.loads(data)
-        submited_keys = list(data.keys())
+        submited_keys = set(data.keys())
 
         if submited_keys == expected_keys:
             date = datetime.strptime(data['date'], "%Y-%m-%d")
@@ -37,6 +37,8 @@ def lambda_handler(event, context):
             data['date'] = convert_to_epoch(data['date'])
             data['from'] = convert_to_epoch(data['from'])
             data['until'] = convert_to_epoch(data['until'])
+            data['sell'] = str(data['sell'])
+            data['buy'] = str(data['buy'])
 
             table.put_item(Item=data)
             response['body'] = "Inserted!"
