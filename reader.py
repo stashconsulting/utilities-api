@@ -1,6 +1,6 @@
 # Built-in
 import re
-import json
+import datetime
 # Third party
 import boto3
 
@@ -10,6 +10,10 @@ table = dynamodb.Table('dollar')
 
 
 def save_record(data: dict):
+    now = datetime.datetime.now()
+    data.update({
+        'date': now.strftime("%Y-%m-%d"),
+    })
     table.put_item(
         Item=data
     )
@@ -46,10 +50,10 @@ def lambda_handler(event, context):
     data = extract_values(data)
     save_record(data)
 
-    return json.dumps({
+    return {
         'statusCode': 200,
         'body': data
-    })
+    }
 
 
 def main():
