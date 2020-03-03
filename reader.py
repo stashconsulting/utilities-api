@@ -36,7 +36,7 @@ def extract_values(text: str):
 
     if (until := re.search(r"hasta\sel\s.*?(\d.+?)\.", text)):
         data.append(until.group(1))
-    
+
     return dict(zip(['buy', 'sell', 'from', 'until'], data))
 
 

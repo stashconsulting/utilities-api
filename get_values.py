@@ -14,10 +14,12 @@ response = {
 }
 valid_modifiers = ['eq', 'gte', 'lte', "between"]
 from_epoch = ['from_date', 'until_date', 'date']
-    
+
 
 def query_items(
-    index_value: int=0, sort_value:str='', *, fe=[], **kwargs) -> list:
+        index_value: int = 0, sort_value: str = '', *,
+        fe: list = [], **kwargs
+        ) -> list:
 
     # get the key so we don't have to pass it
     primary_index = table.key_schema[0]['AttributeName']
@@ -28,7 +30,7 @@ def query_items(
     # Allow to query only by the index key
     if index_value:
         query = Key(primary_index).eq(index_value)
-    
+
         if sort_value:
             query = query & Key(secondary_index).eq(sort_value)
     if fe:
@@ -51,7 +53,7 @@ def query_items(
 
 
 def split_time_into_objects(date):
-    
+
     date_object = datetime.strptime(date, '%Y-%m-%d')
     return (
         date_object.year,
@@ -61,15 +63,15 @@ def split_time_into_objects(date):
 
 
 def lambda_handler(event, context):
-    
+
     if not event.get('queryStringParameters'):
         response['body'] = 'Missing query string'
-    
+
     else:
         parameters = event['queryStringParameters']
 
         if (date := parameters.get('date')):
-            
+
             year, _, epoch_date = split_time_into_objects(date)
 
             if (
@@ -84,7 +86,7 @@ def lambda_handler(event, context):
             ):
                 response['body'] = item
                 response['statusCode'] = 200
-        
+
             else:
                 response['body'] = {
                     "error": "There isn't any value associate with that date"
@@ -96,7 +98,7 @@ def lambda_handler(event, context):
 
             _, _, from_epoch_date = split_time_into_objects(from_date)
             _, _, until_epoch_date = split_time_into_objects(until_date)
-            
+
             # In between query across two different fields
             fe=[
                 {
@@ -110,7 +112,7 @@ def lambda_handler(event, context):
                     'comparision': 'lte'
                 },
             ]
-            
+
             if (items := query_items(fe=fe)):
                 response['body'] = items
                 response['statusCode'] = 200
@@ -119,7 +121,7 @@ def lambda_handler(event, context):
                 response['body'] = {
                     "error": "There isn't any value associate with that date"
                 }
-            
+
         elif (from_date := parameters.get('from_date')):
 
             year, _, epoch_date = split_time_into_objects(from_date)
